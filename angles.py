@@ -59,13 +59,19 @@ def solar_angles(df, lat, lon, alt=0):
 
     """
 
-    # julian date number (number of days since noon on January 1, 4713 B.C.)
-    jd = df.index.to_julian_date()
+    ##I = df.year
+    ##J = df.month
+    ##K = df.day
+    ##jd= K-32075+1461*(I+4800+(J-14)/12)/4+367*(J-2-(J-14)/12*12)/12-3*((I+4900+(J-14)/12)/100)/4
+
+
+    jd = pd.Timestamp(df).to_julian_date()
 
     # offset (2451543.5)
     d_offset = pd.Timestamp('1999-12-31 00:00:00').to_julian_date()
 
-    d = jd.values - d_offset
+    d = jd - d_offset
+
 
     # Keplerian elements for the sun (geocentric)
     w = 282.9404 + 4.70935E-5 * d                   # longitude of perihelion [degrees]
@@ -105,7 +111,7 @@ def solar_angles(df, lat, lon, alt=0):
     delta = np.rad2deg(np.arcsin(zequat / r))
 
     # Calculate local siderial time
-    uth = df.index.hour + (df.index.minute / 60.0) + (df.index.second / 3600.0)
+    uth = df.hour + (df.minute / 60.0) + (df.second / 3600.0)
     gmst0 = np.mod(L + 180.0, 360.0) / 15.0
     sidtime = gmst0 + uth + (lon / 15.0)
 
