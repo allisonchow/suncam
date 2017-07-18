@@ -59,12 +59,6 @@ def solar_angles(df, lat, lon, alt=0):
 
     """
 
-    ##I = df.year
-    ##J = df.month
-    ##K = df.day
-    ##jd= K-32075+1461*(I+4800+(J-14)/12)/4+367*(J-2-(J-14)/12*12)/12-3*((I+4900+(J-14)/12)/100)/4
-
-
     jd = pd.Timestamp(df).to_julian_date()
 
     # offset (2451543.5)
