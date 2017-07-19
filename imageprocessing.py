@@ -1,3 +1,9 @@
+"""
+Uses Hough Circle Transform (found in link below) to detect center of sun
+http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghcircles/py_houghcircles.html
+"""
+
+
 from PIL import Image #accesses pillow library
 import cv2
 import numpy as np
@@ -20,11 +26,11 @@ bwimg = Image.new('1',img.size)
 for i in range(0,img.width):
 	for j in range(0,img.height):
 
-		# If red component is less than 0.8*255, then make pixel white
+		# If red component is less than a certain threshold, then make pixel white
 		if (img.getpixel((i,j))[0] < 250): 
 			bwimg.putpixel((i,j), 0)
 		
-		# If red component is greater than 0.8*255, then make pixel black 
+		# If red component is greater than a certain threshold, then make pixel black 
 		else:
 			bwimg.putpixel((i,j), 1)
 
