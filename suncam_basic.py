@@ -1,5 +1,5 @@
-""" 
-Solar tracking device with camera, BBB, and 2 motors. No sensors are used in this code (accelerometer, etc.).
+"""
+Solar tracking device with camera, BBB, 2 motors, and ADXL345 (accelerometer).
 Multiple test checkpoints highlighted throughout code (may be removed after testing).
 4 user inputs regarding time and location highlighted throughout code.
 """
@@ -12,9 +12,12 @@ import time
 import math
 import easydriver as ed
 import os
+## import adafruit_adxl345 as adxl345
 
 
 # Simulation initialization values
+## theta = adxl_reading.angle(True)
+## now_angle_z = theta   ## change to adxl calibration
 now_angle_z = 0.0
 now_angle_a = 0.0
 count = 0.0
@@ -25,12 +28,12 @@ reset = 1.0     # if reset, =1; if not reset, =0
 
 
 # Update settings
-gmt = timedelta(hours = 7) #-----1. time difference between location and GMT/UTC (depends on daylight savings)-----#
+gmt = timedelta(hours = 7) #-----depends on daylight savings-----#
 dt = datetime.utcnow() - gmt
 # dt = datetime(2017, 7, 10)
-end = dt + timedelta(hours = 3)  #-----2. duration of tracking-----#
+end = dt + timedelta(hours = 3)  #-----duration of tracking-----#
 # end = datetime(2017, 7, 11)
-step = timedelta(minutes = 5)  #-----3. tracking intervals-----#
+step = timedelta(minutes = 5)  #-----tracking intervals-----#
 result = []
 
 
@@ -50,6 +53,7 @@ while dt <= end:
 
 # Initialize dataframe
 df = pd.DataFrame(columns = ['Timestamp', 'Calculated Elevation', 'Change in Elevation', 'Calculated Azimuthal', 'Change in Azimuthal'])
+    ## columns = ['Timestamp', 'Calculated Elevation', 'Measured Elevation', 'Calculated Azimuthal']
 
 df.to_csv('indoors_data.csv')
 
@@ -63,7 +67,7 @@ for i in range(1, (len(result)+1)):
 
     # Calculate current time and position
     ts = pd.Timestamp(result[i-1])
-    zenith = angles.zenith_angle(gmt + ts, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
+    zenith = angles.zenith_angle(gmt + ts, 32.879609, -117.235108)  #-----calculates at given time and coordinates of SERF building-----#
     azimuth = angles.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
     elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108) 
 
@@ -100,6 +104,8 @@ for i in range(1, (len(result)+1)):
             # Initializes angles
             if count==0:
                 now_angle_z = 50    ## update after testing
+                ## theta = adxl_reading.angle(True)
+                ## now_angle_z = theta
                 now_angle_a = 260   ## update after testing
 
 
@@ -122,13 +128,15 @@ for i in range(1, (len(result)+1)):
             # Update variables that keep track of current position
             now_angle_z = now_angle_z + d_angle_z
             now_angle_a = now_angle_a + d_angle_a
+            ## theta = adxl_reading.angle(True)
+            ## now_angle_z = theta
 
             total_moved_z = total_moved_z + math.fabs(d_angle_z)
             total_moved_a = total_moved_a + math.fabs(d_angle_a)
 
             print 'Updated Elevation = {0}'.format(now_angle_z) 
             print 'Updated Azimuth = {0}'.format(now_angle_a)
-
+        
 
             # Take picture
             os.system(
@@ -164,7 +172,8 @@ for i in range(1, (len(result)+1)):
                 print 'It is night!'
 
                 stepper_a.rotate(-total_moved_a)
-                stepper_z.rotate(-total_moved_z)
+                ## os.system("sudo python adxl_cal.py")    ## uses accelerometer to determine zenith position; resets to original position
+                stepper_z.rotate(-total_moved_z)    ## later just use above line
                 
                 reset = 1   
 
@@ -175,6 +184,7 @@ for i in range(1, (len(result)+1)):
     df = pd.read_csv('indoors_data.csv', index_col = 0)
     
     df.loc[len(df)] = [ts, elevation, d_angle_z, azimuth, d_angle_a] 
+    ## df.loc[len(df)] = [ts, elevation, theta, azimuth]
     
     df.to_csv('indoors_data.csv')
 
@@ -182,7 +192,7 @@ for i in range(1, (len(result)+1)):
     # Determines how long to sleep
     if i < len(result): 
 
-        tsleep = (pd.Timestamp(result[i]) - (datetime.utcnow() - gmt)).total_seconds()
+        tsleep = (pd.Timestamp(result[i]) - (datetime.utcnow() - gmt)).total_seconds()   # 7 hour time difference to UTC time
 
         if tsleep >= 0:
 
