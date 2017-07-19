@@ -1,4 +1,4 @@
-import angles_update
+import angles
 from datetime import datetime
 from datetime import timedelta
 import pandas as pd
@@ -59,9 +59,9 @@ for i in range(1, len(result)):
 
     ##first gets current time and position
     ts = pd.Timestamp(result[i])    ##assigns ts as the timestamp version of the time at i
-    zenith = angles_update.zenith_angle(gmt + ts, 32.879609, -117.235108)  ##calculates zenith at given time in GMT and coordinates of SERF building
-    azimuth = angles_update.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
-    elevation = angles_update.elevation_angle(gmt + ts, 32.879609, -117.235108) 
+    zenith = angles.zenith_angle(gmt + ts, 32.879609, -117.235108)  ##calculates zenith at given time in GMT and coordinates of SERF building
+    azimuth = angles.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
+    elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108) 
 
     if zenith < 90.0:
         # Daytime
@@ -141,17 +141,17 @@ for i in range(1, len(result)):
 ##need to add camera
 
 """
-suncam@coimbra-beagle11:~$ sudo python newmotors_update.py
+suncam@coimbra-beagle11:~$ sudo python newmotors.py
 Setting variables...
 Initializing...
 Setting Time Table
 Beginning calculations
 Traceback (most recent call last):
-  File "newmotors_update.py", line 63, in <module>
-    zenith = angles_update.zenith_angle(ts + gmt, 32.879609, -117.235108)  ##calculates zenith at given time in GMT and coordinates of SERF building
-  File "/home/suncam/angles_update.py", line 136, in zenith_angle
+  File "newmotors.py", line 63, in <module>
+    zenith = angles.zenith_angle(ts + gmt, 32.879609, -117.235108)  ##calculates zenith at given time in GMT and coordinates of SERF building
+  File "/home/suncam/angles.py", line 136, in zenith_angle
     return solar_angles(df, lat, lon, alt=alt)[:, 0]
-  File "/home/suncam/angles_update.py", line 61, in solar_angles
+  File "/home/suncam/angles.py", line 61, in solar_angles
     idf = df.index  ##need index array of df
 AttributeError: 'Timestamp' object has no attribute 'index'
 """

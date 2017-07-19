@@ -4,7 +4,7 @@ Multiple test checkpoints highlighted throughout code (may be removed after test
 4 user inputs regarding time and location highlighted throughout code.
 """
 
-import angles_update
+import angles
 from datetime import datetime
 from datetime import timedelta
 import pandas as pd
@@ -27,9 +27,9 @@ reset = 1.0     # if reset, =1; if not reset, =0
 # Update settings
 gmt = timedelta(hours = 7) #-----1. time difference between location and GMT/UTC (depends on daylight savings)-----#
 dt = datetime.utcnow() - gmt
-#dt = datetime(2017, 7, 10)
+# dt = datetime(2017, 7, 10)
 end = dt + timedelta(hours = 3)  #-----2. duration of tracking-----#
-#end = datetime(2017, 7, 11)
+# end = datetime(2017, 7, 11)
 step = timedelta(minutes = 5)  #-----3. tracking intervals-----#
 result = []
 
@@ -63,9 +63,9 @@ for i in range(1, (len(result)+1)):
 
     # Calculate current time and position
     ts = pd.Timestamp(result[i-1])
-    zenith = angles_update.zenith_angle(gmt + ts, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
-    azimuth = angles_update.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
-    elevation = angles_update.elevation_angle(gmt + ts, 32.879609, -117.235108) 
+    zenith = angles.zenith_angle(gmt + ts, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
+    azimuth = angles.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
+    elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108) 
 
 
     # If more than half a step behind schedule, skip this iteration
