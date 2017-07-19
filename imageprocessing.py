@@ -3,6 +3,11 @@ import cv2
 import numpy as np
 
 
+"""
+Binary image
+"""
+
+
 # Open image as PIL image object
 img = Image.open('sky1.jpg')
 
@@ -25,32 +30,53 @@ for i in range(0,img.width):
 
 
 # Save image
-bwimg.save('binaryimage.png')
+bwimg.save('binaryimage.jpg')
 
 
-# Create cv2 image object
-img = cv2.imread('binaryimage.png',0)
+"""
+Hough circle
+"""
 
 
-# Blurs image with 5x5 aperture size (unnecessary?)
-# img = cv2.medianBlur(img,5)
+# Open image as cv2 object
+bwimg = cv2.imread('binaryimage.jpg',0)
 
 
-# BGR to grayscale color conversion (unnecessary?)
-# cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
+# Shrink image
+rsimg = cv2.resize(bwimg, None, fx = 0.25, fy = 0.25)
+
+cv2.imshow('Resized grayscale image',rsimg)	## Delete after testing
 
 
-#
-circles = cv2.HoughCircles(img,cv2.HOUGH_GRADIENT,1,20,
-                            param1=50,param2=30,minRadius=0,maxRadius=0)
+# Dilate image
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(100,100))	## Still figuring out what size to make kernels
+dimg = cv2.dilate(rsimg,kernel,iterations=1)
 
+cv2.imshow('Dilated image',dimg)	## Delete after testing
+
+
+# Color conversion from grayscale to BGR
+cimg = cv2.cvtColor(dimg,cv2.COLOR_GRAY2BGR)
+
+cv2.imshow('BGR image',cimg)	## Delete after testing
+
+
+# Find circles
+circles = cv2.HoughCircles(dimg,cv2.HOUGH_GRADIENT,1,20,
+							param1=50,param2=30,minRadius=0,maxRadius=0)
+
+
+# Display circles and centers on resized grayscale image
 circles = np.uint16(np.around(circles))
 for i in circles[0,:]:
     # draw the outer circle
-    cv2.circle(cimg,(i[0],i[1]),i[2],(0,255,0),2)
+    cv2.circle(rsimg,(i[0],i[1]),i[2],(0,255,0),2)
     # draw the center of the circle
-    cv2.circle(cimg,(i[0],i[1]),2,(0,0,255),3)
+    cv2.circle(rsimg,(i[0],i[1]),2,(0,0,255),3)
 
-cv2.imshow('detected circles',cimg)
+cv2.imshow('detected circles',rsimg)	## Delete after testing
+
+
+# Display images	## Delete after testing
 cv2.waitKey(0)
 cv2.destroyAllWindows()
