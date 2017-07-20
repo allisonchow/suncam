@@ -99,7 +99,7 @@ for i in range(1, (len(result)+1)):
 
             # Initializes angles
             if count==0:
-                now_angle_z = 90    ## update after testing
+                now_angle_z = 0    ## update after testing
                 now_angle_a = 0   ## update after testing
 
 
@@ -115,8 +115,8 @@ for i in range(1, (len(result)+1)):
 
 
             # Move stepper
-            stepper_z.rotate(d_angle_z)     
-            stepper_a.rotate(-d_angle_a)    # Azimuth moves CW, motor is neg when moving CW
+            stepper_z.rotate(-d_angle_z)
+            stepper_a.rotate(-d_angle_a)
 
 
             # Update variables that keep track of current position
