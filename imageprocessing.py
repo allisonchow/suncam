@@ -1,51 +1,93 @@
 """
-Uses Hough Circle Transform (found in link below) to detect center of sun
-http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghcircles/py_houghcircles.html
+Uses solor systems and the mean to detect the center of the sun.
+"Sun-tracking imaging system for intra-hour DNI forecasts" by Yinghao Chu, Mengying Li, Carlos F.M. Coimbra
 """
 
 
-from PIL import Image #accesses pillow library
+from PIL import Image
 import cv2
 import numpy as np
+import colorsys
+
+
+
+# Open bgr image
+img_bgr = cv2.imread('sky1.jpg',1)
+
+
+# Create hsv np array
+img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)		#  Hue range is [0,179], Saturation range is [0,255] and Value range is [0,255]
+
+
+# Create grayscale image
+img_gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)	# Intensity (0-255)
+
+
+# Create initial binary image
+img_bin = img_gray
+
 
 
 """
-Binary image
+b,g,r = img[0,0]
+h,s,v = img_hsv[0,0]
+intens = img_gray[0,0]
+
+print "b,g,r {0}".format(intens)
 """
-
-
-# Open image as PIL image object
-img = Image.open('sky1.jpg')
-
 
 # Create empty type 1 (grayscale) image object
-bwimg = Image.new('1',img.size) 
+# bwimg = Image.new('1',img.size) 
+
+
+# Image properties
+row, col, ch = img_bgr.shape
+d = img_bgr.dtype
+print row,col ,ch,d
+
 
 
 # Create binary image. Iterate over every pixel in image.
-for i in range(0,img.width):
-	for j in range(0,img.height):
-
-		# If red component is less than a certain threshold, then make pixel white
-		if (img.getpixel((i,j))[0] < 250): 
-			bwimg.putpixel((i,j), 0)
-		
-		# If red component is greater than a certain threshold, then make pixel black 
-		else:
-			bwimg.putpixel((i,j), 1)
+for x in range(0,row):
+	for y in range(0,col):
 
 
+		b = float(img_bgr.item(x,y,0))/255
+		g = float(img_bgr.item(x,y,1))/255
+		r = float(img_bgr.item(x,y,2))/255
+		h = float(img_hsv.item(x,y,0))/179
+		s = float(img_hsv.item(x,y,1))/255
+		v = float(img_hsv.item(x,y,2))/255
+		i = float(img_gray.item(x,y))/255
+
+
+		F_8 = ((r+g+b+v+i)/5) - ((h+s)/2)
+
+		img_bin.itemset(x, y, (F_8 > 0.1)*255)	# Set threshold to 0.85 empirically
+
+		if x == 2566:
+			if y == 907:
+				print F_8
+
+print b,g,r,h,s,v,i 
+
+
+
+rsimg = cv2.resize(img_bin, None, fx = 0.25, fy = 0.25)
+cv2.imshow('binary image', rsimg)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+
+
+
+"""
 # Save image
 bwimg.save('binaryimage.jpg')
 bwimg.show('binaryimage.jpg')
 
-"""
-Hough circle
-"""
-
-
-# Open image as cv2 object
-bwimg = cv2.imread('binaryimage.jpg',0)
 
 
 # Shrink image
@@ -89,3 +131,4 @@ cv2.imwrite('circles.jpg',rsimg)
 # Display images	## Delete after testing
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+"""
