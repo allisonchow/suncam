@@ -1,4 +1,6 @@
 """ 
+edit
+
 Solar tracking device with camera, BBB, and 2 motors. No sensors are used in this code (accelerometer, etc.).
 Multiple test checkpoints highlighted throughout code (may be removed after testing).
 4 user inputs regarding time and location highlighted throughout code.
