@@ -23,7 +23,7 @@ class easydriver(object):
         self.pin_microstep_1 = pin_ms1
         self.pin_microstep_2 = pin_ms2
         self.pin_microstep_3 = pin_ms3
-        self.pin_sleep = pin_sleep  #=none
+        self.pin_sleep = pin_sleep
         self.pin_enable = pin_enable
         self.pin_reset = pin_reset
         self.name = name

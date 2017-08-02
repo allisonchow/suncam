@@ -5,6 +5,7 @@ Multiple test checkpoints highlighted throughout code (may be removed after test
 """
 
 import angles
+import imageprocessing
 from datetime import datetime
 from datetime import timedelta
 import pandas as pd
@@ -55,14 +56,14 @@ df.to_csv('indoors_data.csv')
 
 
 # Iterate at each time
-for i in range(1, (len(result)+1)):
+for i in range(0, (len(result))):
 
 
     print 'Iteration: {0}'.format(i)    ## remove after testing
     
 
     # Calculate current time and position
-    ts = pd.Timestamp(result[i-1])
+    ts = pd.Timestamp(result[i])
     zenith = angles.zenith_angle(gmt + ts, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
     azimuth = angles.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
     elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108) 
@@ -115,7 +116,7 @@ for i in range(1, (len(result)+1)):
 
 
             # Move stepper
-            stepper_z.rotate(d_angle_z)
+            stepper_z.rotate(d_angle_z) 
             stepper_a.rotate(d_angle_a)
 
 
@@ -132,9 +133,18 @@ for i in range(1, (len(result)+1)):
 
             # Take picture
             os.system(
-                "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/%s.jpg'"
-                % ts.strftime("%Y%m%d_%H%M%S")
+                "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0}.jpg'".format(ts.strftime("%Y%m%d_%H%M%S"))
             )
+
+
+            # Image processing feedback loop
+            [dist_row, dist_col, dist_abs] = sun_center(ts.strftime("%Y%m%d_%H%M%S"))
+            
+            while dist_abs > 10:    ## figure out proper thresholds and correction values
+                
+
+
+
 
 
             # Counter
@@ -180,17 +190,17 @@ for i in range(1, (len(result)+1)):
 
 
     # Determines how long to sleep
-    if i < len(result): 
+    if i < (len(result)-1): 
 
-        tsleep = (pd.Timestamp(result[i]) - (datetime.utcnow() - gmt)).total_seconds()
+        tsleep = (pd.Timestamp(result[i + 1]) - (datetime.utcnow() - gmt)).total_seconds()
 
-        if tsleep >= 0:
+        if tsleep > 0:
 
             time.sleep(tsleep)
 
 
     # If last iteration, then end
-    elif i >= len(result):
+    elif i >= (len(result)-1):
 
         tsleep = 0
         
