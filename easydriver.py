@@ -85,7 +85,7 @@ class easydriver(object):
         gpio.output(self.pin_microstep_2, True)
         gpio.output(self.pin_microstep_3, False)
 
-    def set_sixteenth_step(self):   #sets output of microsteps 1, 2, and 3 as true
+    def set_sixteenth_step(self):
         gpio.output(self.pin_microstep_1, True)
         gpio.output(self.pin_microstep_2, True)
         gpio.output(self.pin_microstep_3, True)
@@ -116,8 +116,7 @@ class easydriver(object):
         angle_per_step = 360.0 / steps_per_rev
 
         steps_needed = round(math.fabs(angle_needed / angle_per_step))
-
-        self.remainder = math.fabs(angle_needed / angle_per_step) % 0.05625 ##finds remainder, but math.fmod would be a better function for integers
+        d_angle = steps_needed * angle_per_step
 
         print 'rotating!'
 
@@ -129,9 +128,11 @@ class easydriver(object):
             gpio.output(self.pin_direction, False)
 
         while steps_taken < steps_needed:
-            self.step()  ## doesnt need self since its within it
+            self.step()
             steps_taken += 1
             time.sleep(self.delay)
+
+        return d_angle
 
     def finish(self):
         gpio.cleanup()

@@ -1,17 +1,7 @@
 """
-Uses solor systems and the mean to detect the center of the sun.
-"Sun-tracking imaging system for intra-hour DNI forecasts" by Yinghao Chu, Mengying Li, Carlos F.M. Coimbra
-
-Helpful image processing link:
-http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_thresholding/py_thresholding.html
-
-1-clear
-2-small cloud
-3-wispy clouds
-4-cloudy
-5-very cloudy
+Uses saturation values of the image to create binary image.
+Uses clustering functions to find center of the sun.
 """
-
 
 
 import numpy as np
@@ -127,31 +117,29 @@ def rotate_center(dist_x, dist_y):
 
 	if dist_x > thresh:
 	    
-
 	    # Calculate degrees to rotate
 	    degree_a = -math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
 	    
-
 	    # Rotate motor
-	    stepper_a.rotate(degree_a)
+	    degree_a = stepper_a.rotate(degree_a)
 
 
 	elif:
+
 		degree_a = 0
 
 
     if dist_y > thresh:
-        
 
         # Calculate degrees to rotate
 	    degree_z = math.degrees(math.atan(2*dist_y*math.tan(32.625/2)/1080))
-	    
 
 	    # Rotate motor
-	    stepper_z.rotate(degree_z)
+	    degree_z = stepper_z.rotate(degree_z)
 
 
 	elif:
+
 		degree_z = 0
 
 

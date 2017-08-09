@@ -59,9 +59,7 @@ df.to_csv('indoors_data.csv')
 # Iterate at each time
 for i in range(0, (len(result))):
 
-
     print 'Iteration: {0}'.format(i)    ## remove after testing
-    
 
     # Calculate current time and position
     ts = pd.Timestamp(result[i])
@@ -73,24 +71,19 @@ for i in range(0, (len(result))):
 
     # If more than half a step behind schedule, skip this iteration
     if (datetime.utcnow() - gmt) > (ts + (step/2)): 
- 
 
         print 'Could not capture image at {0}'.format(img)
-
 
         # Null dataframe variables
         d_angle_z = 'NA'
         d_angle_a = 'NA' 
 
-
         # Counter
         count += 1
-
 
         # Create variable that avoids reset in position
         reset = 0
 
-    
 
     # If on schedule
     elif (datetime.utcnow() - gmt) <= (ts + (step/2)):
@@ -98,13 +91,12 @@ for i in range(0, (len(result))):
 
         # Daytime
         if zenith < 90.0:
-        
+    
 
             # Initializes angles
             if count==0:
                 now_angle_z = 0    # actually elevation ## update after testing
                 now_angle_a = 0   ## update after testing
-
 
             # Calculate differences in current position and needed position
             d_angle_z = elevation - now_angle_z # now_angle_z is actually elevation 
@@ -115,11 +107,9 @@ for i in range(0, (len(result))):
             print 'Angle Difference Z = {0}'.format(d_angle_z)
             print 'Angle Difference A = {0}'.format(d_angle_a)
 
-
             # Move stepper
-            stepper_z.rotate(d_angle_z) 
-            stepper_a.rotate(d_angle_a)
-
+            d_angle_z = stepper_z.rotate(d_angle_z) 
+            d_angle_a = stepper_a.rotate(d_angle_a)
 
             # Update variables that keep track of current position
             now_angle_z = now_angle_z + d_angle_z
@@ -131,7 +121,6 @@ for i in range(0, (len(result))):
             print 'Updated Elevation = {0}'.format(now_angle_z) 
             print 'Updated Azimuth = {0}'.format(now_angle_a)
 
-
             # Take picture
             os.system(
                 "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0}.jpg'".format(img)
@@ -140,37 +129,30 @@ for i in range(0, (len(result))):
 
             # Image processing
             [dist_x, dist_y] = sun_center(img)
-            
 
             # Feedback loop
             thresh = 20 ## Determine proper threshold
             k = 1   # Counter
 
-
             while dist_x > thresh or dist_y > thresh:
-
 
                 # Rotate motor
                 [degree_a, degree_z] = rotate_center(dist_x, dist_y)
-
 
                 # Take picture
                 os.system(
                     "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0} LOOP {1}.jpg'".format(img, k)
                 )
 
-
                 # Find new sun center
                 [dist_x, dist_y] = sun_center("{0} LOOP {1}".format(img, k))
 
-
                 # Counter
-                k = k + 1
+                k += 1
 
 
             # Counter
             count += 1
-
 
             # Create variable that avoids reset in position
             reset = 0
@@ -178,12 +160,10 @@ for i in range(0, (len(result))):
         
         # Night
         elif zenith >= 90.0:
-            
 
             # Null dataframe variables
             d_angle_z = 'NA'
             d_angle_a = 'NA'
-
 
             # Counter
             count = 0
