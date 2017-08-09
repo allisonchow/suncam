@@ -46,9 +46,9 @@ class easydriver(object):
         if self.pin_microstep_3 is not None:
             gpio.setup(self.pin_microstep_3, gpio.OUT)
             gpio.output(self.pin_microstep_3, False)
-        if self.pin_sleep is not None:  #if the value of pin_sleep is not none (either awake or asleep)
-            gpio.setup(self.pin_sleep, gpio.OUT)    #sets pin_sleep as an output
-            gpio.output(self.pin_sleep, True)   #sets the output value True (awake)
+        if self.pin_sleep is not None:
+            gpio.setup(self.pin_sleep, gpio.OUT)
+            gpio.output(self.pin_sleep, True)
         if self.pin_enable is not None:
             gpio.setup(self.pin_enable, gpio.OUT)
             gpio.output(self.pin_enable, False)
@@ -91,10 +91,10 @@ class easydriver(object):
         gpio.output(self.pin_microstep_3, True)
 
     def sleep(self):    
-        gpio.output(self.pin_sleep, False)  #sets pin_sleep output value as false (asleep)
+        gpio.output(self.pin_sleep, False)
 
     def wake(self):
-        gpio.output(self.pin_sleep, True)   #sets pin_sleep output value as true (awake)
+        gpio.output(self.pin_sleep, True)
 
     def disable(self):
         gpio.output(self.pin_enable, True)

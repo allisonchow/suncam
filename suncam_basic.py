@@ -1,5 +1,6 @@
 """ 
 Solar tracking device with camera, BBB, and 2 motors. No sensors are used in this code (accelerometer, etc.).
+Image processing used as feedback system.
 Multiple test checkpoints highlighted throughout code (may be removed after testing).
 4 user inputs regarding time and location highlighted throughout code.
 """
@@ -39,8 +40,8 @@ result = []
 stepper_z = ed.easydriver("P8_7", 0.007, "P8_8")    ## changed to 0.007 for test
 stepper_a = ed.easydriver("P8_15", 0.007, "P8_16")
 
-## stepper_z.set_sixteenth_step()  # sets resolution to 1/16th
-## stepper_a.set_sixteenth_step()  ## must be string; fix this
+stepper_z.set_sixteenth_step  # sets resolution to 1/16th
+stepper_a.set_sixteenth_step  ## must be string; fix this
 
 
 # Initialize times
@@ -66,14 +67,15 @@ for i in range(0, (len(result))):
     ts = pd.Timestamp(result[i])
     zenith = angles.zenith_angle(gmt + ts, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
     azimuth = angles.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
-    elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108) 
+    elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108)
+    img = ts.strftime("%Y%m%d_%H%M%S") 
 
 
     # If more than half a step behind schedule, skip this iteration
     if (datetime.utcnow() - gmt) > (ts + (step/2)): 
  
 
-        print 'Could not capture image at {0}'.format(ts)
+        print 'Could not capture image at {0}'.format(img)
 
 
         # Null dataframe variables
@@ -100,13 +102,12 @@ for i in range(0, (len(result))):
 
             # Initializes angles
             if count==0:
-                now_angle_z = 50    ## update after testing
-                now_angle_a = 260   ## update after testing
-
+                now_angle_z = 0    # actually elevation ## update after testing
+                now_angle_a = 0   ## update after testing
 
 
             # Calculate differences in current position and needed position
-            d_angle_z = elevation - now_angle_z
+            d_angle_z = elevation - now_angle_z # now_angle_z is actually elevation 
             d_angle_a = azimuth - now_angle_a
 
             print '-------------Time: {0}---------------'.format(ts)
@@ -124,8 +125,8 @@ for i in range(0, (len(result))):
             now_angle_z = now_angle_z + d_angle_z
             now_angle_a = now_angle_a + d_angle_a
 
-            total_moved_z = total_moved_z + math.fabs(d_angle_z)
-            total_moved_a = total_moved_a + math.fabs(d_angle_a)
+            total_moved_z = total_moved_z + d_angle_z
+            total_moved_a = total_moved_a + d_angle_a
 
             print 'Updated Elevation = {0}'.format(now_angle_z) 
             print 'Updated Azimuth = {0}'.format(now_angle_a)
@@ -133,18 +134,38 @@ for i in range(0, (len(result))):
 
             # Take picture
             os.system(
-                "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0}.jpg'".format(ts.strftime("%Y%m%d_%H%M%S"))
+                "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0}.jpg'".format(img)
             )
 
 
-            # Image processing feedback loop
-            [dist_row, dist_col, dist_abs] = sun_center(ts.strftime("%Y%m%d_%H%M%S"))
+            # Image processing
+            [dist_x, dist_y] = sun_center(img)
             
-            while dist_abs > 10:    ## figure out proper thresholds and correction values
-                
+
+            # Feedback loop
+            thresh = 20 ## Determine proper threshold
+            k = 1   # Counter
 
 
+            while dist_x > thresh or dist_y > thresh:
 
+
+                # Rotate motor
+                [degree_a, degree_z] = rotate_center(dist_x, dist_y)
+
+
+                # Take picture
+                os.system(
+                    "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0} LOOP {1}.jpg'".format(img, k)
+                )
+
+
+                # Find new sun center
+                [dist_x, dist_y] = sun_center("{0} LOOP {1}".format(img, k))
+
+
+                # Counter
+                k = k + 1
 
 
             # Counter
