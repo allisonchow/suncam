@@ -89,7 +89,6 @@ class easydriver(object):
         gpio.output(self.pin_microstep_1, True)
         gpio.output(self.pin_microstep_2, True)
         gpio.output(self.pin_microstep_3, True)
-        print ('set sixteenth step is working')     ## Remove after testing
 
     def sleep(self):    
         gpio.output(self.pin_sleep, False)
@@ -124,7 +123,7 @@ class easydriver(object):
         gpio.setup(self.pin_direction, gpio.OUT)
         gpio.output(self.pin_direction, True)
 
-        if angle_needed < 0:
+        if angle_needed > 0:
             gpio.setup(self.pin_direction, gpio.OUT)
             gpio.output(self.pin_direction, False)
 

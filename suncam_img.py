@@ -39,11 +39,11 @@ result = []
 
 
 # Initialize Stepper
-stepper_a = ed.easydriver("P8_7", 0.007, "P8_8")    ## changed to 0.007 for test
-stepper_z = ed.easydriver("P8_15", 0.007, "P8_16")
+stepper_a = ed.easydriver("P8_7", 0.007, "P8_8", "P8_26", "P8_9", "P8_10")
+stepper_z = ed.easydriver("P8_17", 0.007, "P8_18", "P8_14", "P8_15", "P8_16")
 
-stepper_z.set_sixteenth_step  # sets resolution to 1/16th
-stepper_a.set_sixteenth_step  ## must be string; fix this
+stepper_z.set_sixteenth_step()
+stepper_a.set_sixteenth_step()
 
 
 # Initialize times

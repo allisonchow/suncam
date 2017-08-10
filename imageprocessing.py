@@ -143,7 +143,7 @@ def rotate_center(dist_x, dist_y):
 		degree_a = 0
 
 
-    if dist_y > thresh:
+	if dist_y > thresh:
 
         # Calculate degrees to rotate
 	    degree_z = math.degrees(math.atan(2*dist_y*math.tan(32.625/2)/1080))
