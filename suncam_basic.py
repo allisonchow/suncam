@@ -14,6 +14,8 @@ import time
 import math
 import easydriver as ed
 import os
+from imageprocessing import sun_center
+from imageprocessing import rotate_center
 
 
 # Simulation initialization values
@@ -37,8 +39,8 @@ result = []
 
 
 # Initialize Stepper
-stepper_z = ed.easydriver("P8_7", 0.007, "P8_8")    ## changed to 0.007 for test
-stepper_a = ed.easydriver("P8_15", 0.007, "P8_16")
+stepper_a = ed.easydriver("P8_7", 0.007, "P8_8")    ## changed to 0.007 for test
+stepper_z = ed.easydriver("P8_15", 0.007, "P8_16")
 
 stepper_z.set_sixteenth_step  # sets resolution to 1/16th
 stepper_a.set_sixteenth_step  ## must be string; fix this
@@ -51,9 +53,9 @@ while dt <= end:
 
 
 # Initialize dataframe
-df = pd.DataFrame(columns = ['Timestamp', 'Calculated Elevation', 'Change in Elevation', 'Calculated Azimuthal', 'Change in Azimuthal'])
+df = pd.DataFrame(columns = ['Timestamp', 'Calculated Elevation', 'Change in Elevation', 'Calculated Azimuthal', 'Change in Azimuthal', 'Horizontal Offset', 'Vertical Offset'])
 
-df.to_csv('indoors_data.csv')
+df.to_csv('{0}_testdata.csv'.format(dt.strftime("%Y%m%d")))
 
 
 # Iterate at each time
@@ -86,7 +88,7 @@ for i in range(0, (len(result))):
 
 
     # If on schedule
-    elif (datetime.utcnow() - gmt) <= (ts + (step/2)):
+    else:
 
 
         # Daytime
@@ -127,28 +129,31 @@ for i in range(0, (len(result))):
             )
 
 
-            # Image processing
-            [dist_x, dist_y] = sun_center(img)
+            # If picture is taken, complete image processing feedback loop
+            if os.path.isfile('/home/suncam/fswebcampics/{0}.jpg'.format(img)) == True:
 
-            # Feedback loop
-            thresh = 20 ## Determine proper threshold
-            k = 1   # Counter
+                # Find sun center using image processing
+                [dist_x, dist_y] = sun_center(img)
 
-            while dist_x > thresh or dist_y > thresh:
+                # Feedback loop
+                thresh = 20 ## Determine proper threshold
+                k = 1   # Counter
 
-                # Rotate motor
-                [degree_a, degree_z] = rotate_center(dist_x, dist_y)
+                while dist_x > thresh or dist_y > thresh:
 
-                # Take picture
-                os.system(
-                    "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0} LOOP {1}.jpg'".format(img, k)
-                )
+                    # Rotate motor
+                    [degree_a, degree_z] = rotate_center(dist_x, dist_y)
 
-                # Find new sun center
-                [dist_x, dist_y] = sun_center("{0} LOOP {1}".format(img, k))
+                    # Take picture
+                    os.system(
+                        "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0} LOOP {1}.jpg'".format(img, k)
+                    )
 
-                # Counter
-                k += 1
+                    # Find new sun center
+                    [dist_x, dist_y] = sun_center("{0} LOOP {1}".format(img, k))
+
+                    # Counter
+                    k += 1
 
 
             # Counter
@@ -159,7 +164,7 @@ for i in range(0, (len(result))):
 
         
         # Night
-        elif zenith >= 90.0:
+        else:
 
             # Null dataframe variables
             d_angle_z = 'NA'
@@ -174,20 +179,23 @@ for i in range(0, (len(result))):
                 
                 print 'It is night!'
 
-                stepper_a.rotate(-total_moved_a)
-                stepper_z.rotate(-total_moved_z)
-                
+                d_angle_a = stepper_a.rotate(-total_moved_a)
+                d_angle_z = stepper_z.rotate(-total_moved_z)
+
+                total_moved_a = total_moved_a + d_angle_a
+                total_moved_z = total_moved_z + d_angle_z
+
                 reset = 1   
 
                 print 'I have reset!'
 
 
     # Save information into dataframe
-    df = pd.read_csv('indoors_data.csv', index_col = 0)
+    df = pd.read_csv('{0}_testdata.csv'.format(dt.strftime("%Y%m%d")), index_col = 0)
     
-    df.loc[len(df)] = [ts, elevation, d_angle_z, azimuth, d_angle_a] 
+    df.loc[len(df)] = [ts, elevation, d_angle_z, azimuth, d_angle_a, dist_x, dist_y] 
     
-    df.to_csv('indoors_data.csv')
+    df.to_csv('{0}_testdata.csv'.format(dt.strftime("%Y%m%d")))
 
 
     # Determines how long to sleep
@@ -201,9 +209,15 @@ for i in range(0, (len(result))):
 
 
     # If last iteration, then end
-    elif i >= (len(result)-1):
+    else:
 
-        tsleep = 0
+        d_angle_a = stepper_a.rotate(-total_moved_a)
+        d_angle_z = stepper_z.rotate(-total_moved_z)
+
+        total_moved_a = total_moved_a + d_angle_a
+        total_moved_z = total_moved_z + d_angle_z
+        
+        reset = 1 
         
         # Display dataframe
         pd.set_option('display.max_rows', len(df))  ## remove after testing
