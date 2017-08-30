@@ -6,6 +6,7 @@ Multiple test checkpoints highlighted throughout code (may be removed after test
 """
 
 import angles
+import numpy as np
 import imageprocessing
 from datetime import datetime
 from datetime import timedelta
@@ -34,12 +35,12 @@ dt = datetime.utcnow() - gmt
 # dt = datetime(2017, 7, 10)
 end = dt + timedelta(hours = 3)  #-----2. duration of tracking-----#
 # end = datetime(2017, 7, 11)
-step = timedelta(minutes = 5)  #-----3. tracking intervals-----#
+step = timedelta(minutes = 2)  #-----3. tracking intervals-----#
 result = []
 
 
 # Initialize Stepper
-stepper_a = ed.easydriver("P8_7", 0.007, "P8_8", "P8_26", "P8_9", "P8_10")
+stepper_a = ed.easydriver("P8_9", 0.007, "P8_10", "P8_7", "P8_8", "P8_26")
 stepper_z = ed.easydriver("P8_17", 0.007, "P8_18", "P8_14", "P8_15", "P8_16")
 
 stepper_z.set_sixteenth_step()
@@ -69,6 +70,10 @@ for i in range(0, (len(result))):
     azimuth = angles.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
     elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108)
     img = ts.strftime("%Y%m%d_%H%M%S") 
+
+    # Initialize values
+    dist_x = 'NA'
+    dist_y = 'NA'
 
 
     # If more than half a step behind schedule, skip this iteration
@@ -133,27 +138,39 @@ for i in range(0, (len(result))):
             if os.path.isfile('/home/suncam/fswebcampics/{0}.jpg'.format(img)) == True:
 
                 # Find sun center using image processing
-                [dist_x, dist_y] = sun_center(img)
+                [dist_x, dist_y, check] = sun_center(img)
 
-                # Feedback loop
-                thresh = 20 ## Determine proper threshold
-                k = 1   # Counter
+                if check == 1:  # Sun center detected
 
-                while dist_x > thresh or dist_y > thresh:
+                    # Feedback Loop: Rotate motor
+                    thresh = 44
+                    k = 1   # Counter
 
-                    # Rotate motor
-                    [degree_a, degree_z] = rotate_center(dist_x, dist_y)
+                    degree_a = 0
+                    degree_z = 0
 
-                    # Take picture
-                    os.system(
-                        "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0} LOOP {1}.jpg'".format(img, k)
-                    )
+                    while np.absolute(dist_x) > thresh or np.absolute(dist_y) > thresh and check == 1:
 
-                    # Find new sun center
-                    [dist_x, dist_y] = sun_center("{0} LOOP {1}".format(img, k))
+                        # Calculate degrees to rotate
+                        [degree_a, degree_z] = rotate_center(dist_x, dist_y)
 
-                    # Counter
-                    k += 1
+                        # Rotate azimuthal motor
+                        if np.absolute(dist_x) > thresh:
+                            degree_a = stepper_a.rotate(-degree_a)
+
+                        # Rotate zenith motor
+                        if np.absolute(dist_y) > thresh:
+                            degree_z = stepper_z.rotate(degree_z)
+
+                        # Take picture
+                        os.system(
+                            "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0} LOOP {1}.jpg'".format(img, k)
+                        )
+
+                        # Find new sun center
+                        [dist_x, dist_y, check] = sun_center(("{0} LOOP {1}".format(img, k)))
+
+                        k += 1
 
 
             # Counter
@@ -184,6 +201,10 @@ for i in range(0, (len(result))):
 
                 total_moved_a = total_moved_a + d_angle_a
                 total_moved_z = total_moved_z + d_angle_z
+
+                dist_x = 'NA'
+                dist_y = 'NA'
+
 
                 reset = 1   
 

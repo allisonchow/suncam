@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 from pylab import *
 from scipy.ndimage import measurements
+import math
 
 
 def sun_center(img):
@@ -26,9 +27,14 @@ def sun_center(img):
 		Number of pixels in the x-direction between sun center and image center
 
     dist_y : float
-    	Number of pixels in the y-direction between sun center and image center    	
+    	Number of pixels in the y-direction between sun center and image center  
+
+    check : float
+    	Equals 0 if sun center is not detected. Equals 1 if sun center is detected.  	
 	"""
 
+	# Set checkmark value
+	check = 1	# If 1, then sun center detected. If 0, then sun center not detected
 
 	# Open image
 	img_bgr = cv2.imread("/home/suncam/fswebcampics/{0}.jpg".format(img),1)
@@ -49,10 +55,13 @@ def sun_center(img):
 
 
 	# If within threshold, make black
-	img_sun[np.where((r > 0.96) & (g > 0.96) & (b > 0.96) & (s > 0.027) & (h > 0.8))] = 0
+	img_sun[np.where((r > 0.96) & (g > 0.96) & (b > 0.96) & (s > 0.023) & (h > 0.8))] = 0
 
 
-	# Label clusters
+	cv2.imwrite('/home/suncam/fswebcampics/{0} Binary.jpg'.format(img), img_sun)	# Delete after testing
+
+
+	# Label clustersd
 	lw, num = measurements.label(img_sun)
 
 	# Makes sure that clusters are detected
@@ -75,28 +84,26 @@ def sun_center(img):
 			img_bgr = cv2.line(img_bgr, (np.int(com_col + 1 - 10), np.int(com_row + 1)), (np.int(com_col + 1 + 10), np.int(com_row + 1)), [255,0,0], 1, 8)
 			img_bgr = cv2.line(img_bgr, (np.int(com_col + 1), np.int(com_row + 1 - 10)), (np.int(com_col + 1), np.int(com_row + 1 + 10)), [255,0,0], 1, 8)
 
-			# Save image
-			cv2.imwrite('/home/suncam/fswebcampics/{0} Center.jpg'.format(img), img_bgr)	# Delete after testing
-			cv2.imwrite('/home/suncam/fswebcampics/{0} Binary.jpg'.format(img), img_sun)	# Delete after testing
 
 		else:
-			print ('Sun center not detected at {0}'.format(img))
-			dist_x = 0
-			dist_y = 0
+			check = 0
+			print ('Sun center not detected at {0}. Area too small.'.format(img))
+			dist_x = 'NA'
+			dist_y = 'NA'
 
 	else:
-		print ('Sun center not detected at {0}'.format(img))
-		dist_x = 0
-		dist_y = 0
+		check = 0
+		print ('Sun center not detected at {0}. Not enough clusters detected.'.format(img))
+		dist_x = 'NA'
+		dist_y = 'NA'
 
 
 	# Return values
-	return [dist_x, dist_y]
+	return [dist_x, dist_y, check]
 
 
 def rotate_center(dist_x, dist_y):
 	"""
-	Rotate the stepper motors the distance between the sun center and the image center.
 	
 	Uses basic trigonometric relationships to solve for the degree-pixel relationship:
 
@@ -126,35 +133,17 @@ def rotate_center(dist_x, dist_y):
 
     Returns
     -------
+    degree_a : float
+    	Number of degrees for azimuthal stepper to rotate
+
+    degree_z : float
+    	Number of degrees for zenith stepper to rotate
 	"""
-
-
-	if dist_x > thresh:
 	    
-	    # Calculate degrees to rotate
-	    degree_a = -math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
-	    
-	    # Rotate motor
-	    degree_a = stepper_a.rotate(degree_a)
+    # Calculate azimuthal degrees to rotate
+	degree_a = -math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
 
-
-	else:
-
-		degree_a = 0
-
-
-	if dist_y > thresh:
-
-        # Calculate degrees to rotate
-	    degree_z = math.degrees(math.atan(2*dist_y*math.tan(32.625/2)/1080))
-
-	    # Rotate motor
-	    degree_z = stepper_z.rotate(degree_z)
-
-
-	else:
-
-		degree_z = 0
-
+    # Calculate zenith degrees to rotate
+	degree_z = math.degrees(math.atan(2*dist_y*math.tan(32.625/2)/1080))
 
 	return [degree_a, degree_z]
