@@ -8,6 +8,7 @@ Converted from a RaspberryPi version by Renn.
 import Adafruit_BBIO.GPIO as gpio
 import time
 import math
+import numpy as np
 
 
 class easydriver(object):   
@@ -117,6 +118,7 @@ class easydriver(object):
 
         steps_needed = round(angle_needed / angle_per_step)
         d_angle = steps_needed * angle_per_step
+        steps_needed = np.fabs(steps_needed)
 
         print 'rotating!'
 
