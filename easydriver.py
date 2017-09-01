@@ -115,7 +115,7 @@ class easydriver(object):
         steps_per_rev = 400.0 * 16.0
         angle_per_step = 360.0 / steps_per_rev
 
-        steps_needed = round(math.fabs(angle_needed / angle_per_step))
+        steps_needed = round(angle_needed / angle_per_step)
         d_angle = steps_needed * angle_per_step
 
         print 'rotating!'

@@ -167,8 +167,16 @@ for i in range(0, (len(result))):
                             "fswebcam --jpeg 100 -D 2 -F 20 -S 5 -r 1920x1080 --flip v,h '/home/suncam/fswebcampics/{0} LOOP {1}.jpg'".format(img, k)
                         )
 
-                        # Find new sun center
-                        [dist_x, dist_y, check] = sun_center(("{0} LOOP {1}".format(img, k)))
+                        # Make sure picture was taken
+                        if os.path.isfile('/home/suncam/fswebcampics/{0} LOOP {1}.jpg'.format(img, k)) == True:
+
+                            # Find new sun center
+                            [dist_x, dist_y, check] = sun_center(("{0} LOOP {1}".format(img, k)))
+
+                        else:
+                            dist_x = 'NA'
+                            dist_y = 'NA'
+                            check = 0
 
                         k += 1
 

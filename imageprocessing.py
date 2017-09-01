@@ -46,7 +46,7 @@ def sun_center(img):
 	r = np.array(img_bgr[:,:,2], dtype = float)/255
 
 	img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)		#  Hue range is [0,179], Saturation range is [0,255] and Value range is [0,255]
-	h = np.array(img_hsv[:,:,0], dtype = float)/179
+	# h = np.array(img_hsv[:,:,0], dtype = float)/179
 	s = np.array(img_hsv[:,:,1], dtype = float)/255
 
 
@@ -55,7 +55,7 @@ def sun_center(img):
 
 
 	# If within threshold, make black
-	img_sun[np.where((r > 0.96) & (g > 0.96) & (b > 0.96) & (s > 0.023) & (h > 0.8))] = 0
+	img_sun[np.where((r > 0.96) & (g > 0.96) & (b > 0.96) & (s > 0.023))] = 0
 
 
 	cv2.imwrite('/home/suncam/fswebcampics/{0} Binary.jpg'.format(img), img_sun)	# Delete after testing
