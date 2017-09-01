@@ -27,7 +27,7 @@ def sun_center(img):
 		Number of pixels in the x-direction between sun center and image center
 
     dist_y : float
-    	Number of pixels in the y-direction between sun center and image center  
+    	Number of pixels in the y-direction between sun center and image center    	
 
     check : float
     	Equals 0 if sun center is not detected. Equals 1 if sun center is detected.  	
@@ -141,7 +141,7 @@ def rotate_center(dist_x, dist_y):
 	"""
 	    
     # Calculate azimuthal degrees to rotate
-	degree_a = -math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
+	degree_a = math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
 
     # Calculate zenith degrees to rotate
 	degree_z = math.degrees(math.atan(2*dist_y*math.tan(32.625/2)/1080))

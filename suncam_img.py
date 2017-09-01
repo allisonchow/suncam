@@ -156,7 +156,7 @@ for i in range(0, (len(result))):
 
                         # Rotate azimuthal motor
                         if np.absolute(dist_x) > thresh:
-                            degree_a = stepper_a.rotate(-degree_a)
+                            degree_a = stepper_a.rotate(degree_a)
 
                         # Rotate zenith motor
                         if np.absolute(dist_y) > thresh:
