@@ -33,9 +33,9 @@ reset = 1.0     # if reset, =1; if not reset, =0
 gmt = timedelta(hours = 7) #-----1. time difference between location and GMT/UTC (depends on daylight savings)-----#
 dt = datetime.utcnow() - gmt
 # dt = datetime(2017, 7, 10)
-end = dt + timedelta(hours = 3)  #-----2. duration of tracking-----#
+end = dt + timedelta(days = 4)  #-----2. duration of tracking-----#
 # end = datetime(2017, 7, 11)
-step = timedelta(minutes = 2)  #-----3. tracking intervals-----#
+step = timedelta(minutes = 5)  #-----3. tracking intervals-----#
 result = []
 
 
@@ -72,8 +72,8 @@ for i in range(0, (len(result))):
     img = ts.strftime("%Y%m%d_%H%M%S") 
 
     # Initialize values
-    dist_x = 'NA'
-    dist_y = 'NA'
+    dist_x = 0
+    dist_y = 0
 
 
     # If more than half a step behind schedule, skip this iteration
@@ -149,7 +149,7 @@ for i in range(0, (len(result))):
                     degree_a = 0
                     degree_z = 0
 
-                    while np.absolute(dist_x) > thresh or np.absolute(dist_y) > thresh and check == 1:
+                    while np.fabs(dist_x) > thresh or np.fabs(dist_y) > thresh and check == 1:
 
                         # Calculate degrees to rotate
                         [degree_a, degree_z] = rotate_center(dist_x, dist_y)
@@ -174,8 +174,8 @@ for i in range(0, (len(result))):
                             [dist_x, dist_y, check] = sun_center(("{0} LOOP {1}".format(img, k)))
 
                         else:
-                            dist_x = 'NA'
-                            dist_y = 'NA'
+                            dist_x = 0
+                            dist_y = 0
                             check = 0
 
                         k += 1
@@ -210,8 +210,8 @@ for i in range(0, (len(result))):
                 total_moved_a = total_moved_a + d_angle_a
                 total_moved_z = total_moved_z + d_angle_z
 
-                dist_x = 'NA'
-                dist_y = 'NA'
+                dist_x = 0
+                dist_y = 0
 
 
                 reset = 1   
