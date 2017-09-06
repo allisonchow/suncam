@@ -106,6 +106,14 @@ def sun_center(img):
 
 		i += 1
 
+	if check == 2:
+		dist_x = 0
+		dist_y = 0
+
+	if check == 0:
+		dist_x = 0
+		dist_y = 0
+
 
 	# Return values
 	return [dist_x, dist_y, check]
