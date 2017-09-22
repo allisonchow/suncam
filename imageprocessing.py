@@ -34,7 +34,7 @@ def sun_center(img):
 	"""
 
 	# Set checkmark value
-	check = 0	# If 1, then sun center detected. If 0, then sun center not detected
+	check = 0	# If <0, then sun center detected. Else, then sun center not detected. 
 	x = [0.021, 0.018, 0.012, 0.008]	# list of threshold values to check
 	i = 0
 
@@ -91,13 +91,13 @@ def sun_center(img):
 
 				cv2.imwrite('/home/suncam/fswebcampics/{0} Center THRESH {1}.jpg'.format(img,j), img_bgr)	# Delete after testing
 
-				check = 1
+				check = -1
 
 
 			else:
 				#print ('Sun center not detected at {0}. Area too small. THRESH {1}'.format(img,j))
 				if j == 0.008:
-					check = 2
+					check = 1
 
 		else:
 			#print ('Sun center not detected at {0}. Not enough clusters detected. THRESH {1}'.format(img,j))
@@ -106,11 +106,7 @@ def sun_center(img):
 
 		i += 1
 
-	if check == 2:
-		dist_x = 0
-		dist_y = 0
-
-	if check == 0:
+	if check >= 0:
 		dist_x = 0
 		dist_y = 0
 

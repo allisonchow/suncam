@@ -40,11 +40,11 @@ result = []
 
 
 # Initialize Stepper
-stepper_a = ed.easydriver("P8_9", 0.007, "P8_10", "P8_7", "P8_8", "P8_26")
-stepper_z = ed.easydriver("P8_17", 0.007, "P8_18", "P8_14", "P8_15", "P8_16")
+stepper_z = ed.easydriver("P8_11", 0.007, "P8_12")
+stepper_a = ed.easydriver("P8_17", 0.01, "P8_18")
 
-stepper_z.set_sixteenth_step()
-stepper_a.set_sixteenth_step()
+#stepper_z.set_sixteenth_step()
+#stepper_a.set_sixteenth_step()
 
 
 # Initialize times
@@ -66,9 +66,9 @@ for i in range(0, (len(result))):
 
     # Calculate current time and position
     ts = pd.Timestamp(result[i])
-    zenith = angles.zenith_angle(gmt + ts, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
-    azimuth = angles.azimuthal_angle(gmt + ts, 32.879609, -117.235108)  
-    elevation = angles.elevation_angle(gmt + ts, 32.879609, -117.235108)
+    zenith = angles.zenith_angle(ts + gmt, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
+    azimuth = angles.azimuthal_angle(ts + gmt, 32.879609, -117.235108)  
+    elevation = angles.elevation_angle(ts + gmt, 32.879609, -117.235108)
     img = ts.strftime("%Y%m%d_%H%M%S") 
 
     # Initialize values
