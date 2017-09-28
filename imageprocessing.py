@@ -30,8 +30,17 @@ def sun_center(img):
     	Number of pixels in the y-direction between sun center and image center    	
 
     check : float
-    	Equals 0 if sun center is not detected. Equals 1 if sun center is detected.  	
+    	>= 0 if sun center is not detected. Equals -1 if sun center is detected.
+    	-1: sun center detected
+    	0: still looping through threshold values
+    	1: area of cluster too small to be sun center.
+    	2: not enough clusters detected.
+    	3: image not taken. 	
 	"""
+
+	print ("""
+		Beginning Image Processing!
+		""")
 
 	# Set checkmark value
 	check = 0	# If <0, then sun center detected. Else, then sun center not detected. 
@@ -63,11 +72,12 @@ def sun_center(img):
 		img_sun[np.where((r > 0.96) & (g > 0.96) & (b > 0.96) & (h > 0.78) & (s > j))] = 0
 
 
-		cv2.imwrite('/home/suncam/fswebcampics/{0} Binary THRESH {1}.jpg'.format(img,j), img_sun)	# Delete after testing
+		cv2.imwrite('/home/suncam/fswebcampics/{0} Binary.jpg'.format(img), img_sun)	# Delete after testing
 
 
 		# Label clustersd
 		lw, num = measurements.label(img_sun)
+		clustnum = len(lw)
 
 		# Makes sure that clusters are detected
 		if num > 1:
@@ -75,9 +85,10 @@ def sun_center(img):
 			# Find area of clusters
 			area = measurements.sum(img_sun, lw, index=arange(len(lw)))
 			area[np.where(area == np.amax(area))] = 0
+			a = area[np.argmax(area)]
 
 			# Makes sure that detected clusters are correct
-			if area[np.argmax(area)] > 50000:
+			if a > 50000:
 
 				# Find center of mass
 				[com_row, com_col] = np.round(measurements.center_of_mass(img_sun, lw, np.argmax(area)))
@@ -89,7 +100,7 @@ def sun_center(img):
 				img_bgr = cv2.line(img_bgr, (np.int(com_col + 1 - 10), np.int(com_row + 1)), (np.int(com_col + 1 + 10), np.int(com_row + 1)), [255,0,0], 1, 8)
 				img_bgr = cv2.line(img_bgr, (np.int(com_col + 1), np.int(com_row + 1 - 10)), (np.int(com_col + 1), np.int(com_row + 1 + 10)), [255,0,0], 1, 8)
 
-				cv2.imwrite('/home/suncam/fswebcampics/{0} Center THRESH {1}.jpg'.format(img,j), img_bgr)	# Delete after testing
+				cv2.imwrite('/home/suncam/fswebcampics/{0} Center {1}.jpg'.format(img,j), img_bgr)	# Delete after testing
 
 				check = -1
 
@@ -109,10 +120,16 @@ def sun_center(img):
 	if check >= 0:
 		dist_x = 0
 		dist_y = 0
+		j = 0
+		a = 0
+		clustnum = 0
 
+	print ("""
+	Completing Image Processing! Status: {0}
+	""".format(check))
 
 	# Return values
-	return [dist_x, dist_y, check]
+	return [dist_x, dist_y, check, j, a, clustnum]
 
 
 def rotate_center(dist_x, dist_y):
@@ -157,6 +174,6 @@ def rotate_center(dist_x, dist_y):
 	degree_a = math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
 
     # Calculate zenith degrees to rotate
-	degree_z = math.degrees(math.atan(2*dist_y*math.tan(32.625/2)/1080))
+	degree_z = math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
 
 	return [degree_a, degree_z]
