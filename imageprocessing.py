@@ -174,6 +174,6 @@ def rotate_center(dist_x, dist_y):
 	degree_a = math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
 
     # Calculate zenith degrees to rotate
-	degree_z = math.degrees(math.atan(2*dist_x*math.tan(58/2)/1920))
+	degree_z = math.degrees(math.atan(2*dist_y*math.tan(58/2)/1920))
 
 	return [degree_a, degree_z]
