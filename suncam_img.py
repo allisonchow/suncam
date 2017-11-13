@@ -17,6 +17,7 @@ import easydriver as ed
 import os
 from imageprocessing import sun_center
 from imageprocessing import rotate_center
+import pytz
 
 
 # Simulation initialization values
@@ -32,10 +33,10 @@ thresh = 44
 
 
 # Update settings
-gmt = timedelta(hours = 7) #-----1. time difference between location and GMT/UTC (depends on daylight savings)-----#
-dt = datetime.utcnow() - gmt
+tz = pytz.timezone("America/Los_Angeles") #-----1. timezone-----#
+gmt = tz.utcoffset(datetime.utcnow())
+dt = datetime.utcnow() + gmt
 start = dt
-# dt = datetime(2017, 7, 10)
 end = dt + timedelta(days = 30)  #-----2. duration of tracking-----#
 # end = datetime(2017, 7, 11)
 step = timedelta(minutes = 5)  #-----3. tracking intervals-----#
@@ -67,9 +68,9 @@ for i in range(0, (len(result))):
 
     # Calculate current time and position
     ts = pd.Timestamp(result[i])
-    zenith = angles.zenith_angle(ts + gmt, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
-    azimuth = angles.azimuthal_angle(ts + gmt, 32.879609, -117.235108)  
-    elevation = angles.elevation_angle(ts + gmt, 32.879609, -117.235108)
+    zenith = angles.zenith_angle(ts - gmt, 32.879609, -117.235108)  #-----4. location coordinates (SERF building)-----#
+    azimuth = angles.azimuthal_angle(ts - gmt, 32.879609, -117.235108)  
+    elevation = angles.elevation_angle(ts - gmt, 32.879609, -117.235108)
     img = ts.strftime("%Y%m%d_%H%M%S") 
 
     # Null dataframe variables
@@ -85,7 +86,7 @@ for i in range(0, (len(result))):
 
 
     # If more than half a step behind schedule, skip this iteration and set null data
-    if (datetime.utcnow() - gmt) > (ts + (step/2)): 
+    if (datetime.utcnow() + gmt) > (ts + (step/2)): 
 
         print ('Could not capture image at {0}'.format(img))
 
@@ -235,7 +236,7 @@ for i in range(0, (len(result))):
     # Determines how long to sleep
     if i < (len(result)-1): 
 
-        tsleep = (pd.Timestamp(result[i + 1]) - (datetime.utcnow() - gmt)).total_seconds()
+        tsleep = (pd.Timestamp(result[i + 1]) - (datetime.utcnow() + gmt)).total_seconds()
 
         if tsleep > 0:
 
