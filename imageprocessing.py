@@ -39,8 +39,8 @@ def sun_center(img):
 	"""
 
 	print ("""
-		Beginning Image Processing!
-		""")
+	Beginning Image Processing!
+	""")
 
 	# Set checkmark value
 	check = 0	# If <0, then sun center detected. Else, then sun center not detected. 

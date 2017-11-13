@@ -36,7 +36,7 @@ gmt = timedelta(hours = 7) #-----1. time difference between location and GMT/UTC
 dt = datetime.utcnow() - gmt
 start = dt
 # dt = datetime(2017, 7, 10)
-end = dt + timedelta(days = 5)  #-----2. duration of tracking-----#
+end = dt + timedelta(days = 30)  #-----2. duration of tracking-----#
 # end = datetime(2017, 7, 11)
 step = timedelta(minutes = 5)  #-----3. tracking intervals-----#
 result = []
@@ -253,8 +253,5 @@ for i in range(0, (len(result))):
         
         reset = 1 
         
-        # Display dataframe
-        pd.set_option('display.max_rows', len(df))  ## remove after testing
-        print(df)
 
         print ('--------------Ending solar tracking at {0}--------------'.format(datetime.utcnow().strftime('%Y-%m-%d %H-%M-%S')))
