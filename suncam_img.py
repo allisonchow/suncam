@@ -79,7 +79,7 @@ for i in range(0, (len(result))):
     degree_z = 0
     dist_x = 0
     dist_y = 0
-    check = 3   # image not taken
+    check = -3   # image not taken
     satthresh = 0
     clustarea = 0
     clustnum = 0
@@ -151,7 +151,7 @@ for i in range(0, (len(result))):
                 [dist_x, dist_y, check, satthresh, clustarea, clustnum] = sun_center(img)
 
                 # Feedback loop
-                while (np.fabs(dist_x) > thresh or np.fabs(dist_y) > thresh) and check == -1:
+                while (np.fabs(dist_x) > thresh or np.fabs(dist_y) > thresh) and check == 1:
 
                     k += 1
 
@@ -171,7 +171,7 @@ for i in range(0, (len(result))):
                     degree_z = 0
                     dist_x = 0
                     dist_y = 0
-                    check = 3   # image not taken
+                    check = -3   # image not taken
                     satthresh = 0
                     clustarea = 0
                     clustnum = 0

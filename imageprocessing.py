@@ -30,12 +30,12 @@ def sun_center(img):
     	Number of pixels in the y-direction between sun center and image center    	
 
     check : float
-    	>= 0 if sun center is not detected. Equals -1 if sun center is detected.
-    	-1: sun center detected
-    	0: still looping through threshold values
-    	1: area of cluster too small to be sun center.
-    	2: not enough clusters detected.
-    	3: image not taken. 	
+    	<= 0 if sun center is not detected. Equals 1 if sun center is detected.
+    	1: sun center detected
+    	0: never reached a check point
+    	-1: area of cluster too small to be sun center.
+    	-2: not enough clusters detected.
+    	-3: image not taken. 	
 	"""
 
 	print ("""
@@ -44,7 +44,7 @@ def sun_center(img):
 
 	# Set checkmark value
 	check = 0	# If <0, then sun center detected. Else, then sun center not detected. 
-	x = [0.021, 0.018, 0.012, 0.008]	# list of threshold values to check
+	j = 0.021	# list of threshold values to check
 	i = 0
 
 	# Open image
@@ -64,60 +64,56 @@ def sun_center(img):
 	# Create empty image array
 	img_sun = np.full((row, col), 255, dtype = float)
 
-	while check == 0:
 
-		j = x[i]
-
-		# If within threshold, make black
-		img_sun[np.where((r > 0.96) & (g > 0.96) & (b > 0.96) & (h > 0.78) & (s > j))] = 0
+	# If within threshold, make black
+	img_sun[np.where((r > 0.96) & (g > 0.96) & (b > 0.96) & (h > 0.78) & (s > j))] = 0
 
 
-		cv2.imwrite('/home/suncam/fswebcampics/{0} Binary.jpg'.format(img), img_sun)	# Delete after testing
+	cv2.imwrite('/home/suncam/fswebcampics/{0} Binary.jpg'.format(img), img_sun)	# Delete after testing
 
 
-		# Label clustersd
-		lw, num = measurements.label(img_sun)
-		clustnum = len(lw)
+	# Label clustersd
+	lw, num = measurements.label(img_sun)
+	clustnum = len(lw)
 
-		# Makes sure that clusters are detected
-		if num > 1:
+	# Makes sure that clusters are detected
+	if num > 1:
 
-			# Find area of clusters
-			area = measurements.sum(img_sun, lw, index=arange(len(lw)))
-			area[np.where(area == np.amax(area))] = 0
-			a = area[np.argmax(area)]
+		# Find area of clusters
+		area = measurements.sum(img_sun, lw, index=arange(len(lw)))
+		area[np.where(area == np.amax(area))] = 0
+		a = area[np.argmax(area)]
 
-			# Makes sure that detected clusters are correct
-			if a > 50000:
+		# Makes sure that detected clusters are correct
+		if a > 50000:
 
-				# Find center of mass
-				[com_row, com_col] = np.round(measurements.center_of_mass(img_sun, lw, np.argmax(area)))
-				dist_y = row/2 - com_row	# Positive difference = above true center(move down); Negative difference = below true center (move up) 
-				dist_x = com_col - col/2	# Positive difference = right of true center (move left); Negative difference = left of true center (move right)
-				# dist_abs = sqrt(pow(dist_x, 2) + pow(dist_y, 2))
+			# Find center of mass
+			[com_row, com_col] = np.round(measurements.center_of_mass(img_sun, lw, np.argmax(area)))
+			dist_y = row/2 - com_row	# Positive difference = above true center(move down); Negative difference = below true center (move up) 
+			dist_x = com_col - col/2	# Positive difference = right of true center (move left); Negative difference = left of true center (move right)
+			# dist_abs = sqrt(pow(dist_x, 2) + pow(dist_y, 2))
 
-				# Mark center (Delete after testing)
-				img_bgr = cv2.line(img_bgr, (np.int(com_col + 1 - 10), np.int(com_row + 1)), (np.int(com_col + 1 + 10), np.int(com_row + 1)), [255,0,0], 1, 8)
-				img_bgr = cv2.line(img_bgr, (np.int(com_col + 1), np.int(com_row + 1 - 10)), (np.int(com_col + 1), np.int(com_row + 1 + 10)), [255,0,0], 1, 8)
+			# Mark center (Delete after testing)
+			img_bgr = cv2.line(img_bgr, (np.int(com_col + 1 - 10), np.int(com_row + 1)), (np.int(com_col + 1 + 10), np.int(com_row + 1)), [255,0,0], 1, 8)
+			img_bgr = cv2.line(img_bgr, (np.int(com_col + 1), np.int(com_row + 1 - 10)), (np.int(com_col + 1), np.int(com_row + 1 + 10)), [255,0,0], 1, 8)
 
-				cv2.imwrite('/home/suncam/fswebcampics/{0} Center {1}.jpg'.format(img,j), img_bgr)	# Delete after testing
+			cv2.imwrite('/home/suncam/fswebcampics/{0} Center {1}.jpg'.format(img,j), img_bgr)	# Delete after testing
 
-				check = -1
+			check = 1
 
-
-			else:
-				#print ('Sun center not detected at {0}. Area too small. THRESH {1}'.format(img,j))
-				if j == 0.008:
-					check = 1
 
 		else:
-			#print ('Sun center not detected at {0}. Not enough clusters detected. THRESH {1}'.format(img,j))
-			if j == 0.008:
-				check = 2
+			#print ('Sun center not detected at {0}. Area too small. THRESH {1}'.format(img,j))
+			check = -1
 
-		i += 1
 
-	if check >= 0:
+	else:
+		#print ('Sun center not detected at {0}. Not enough clusters detected. THRESH {1}'.format(img,j))
+		check = -2
+
+
+
+	if check <= 0:
 		dist_x = 0
 		dist_y = 0
 		j = 0
